@@ -5,3 +5,9 @@ app = FastAPI()
 
 app.include_router(subscriptions.router)
 app.include_router(notifications.router) 
+
+@app.get("/")
+def read_root():
+    return "Welcome to the Notification Service"
+
+
