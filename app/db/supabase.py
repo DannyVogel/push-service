@@ -1,11 +1,8 @@
 from app.db.base import DatabaseBackend
-import os
+from app.config import SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 from supabase import create_client, Client
 
-supabase_url = os.environ.get("SUPABASE_URL")
-supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-
-supabase: Client = create_client(supabase_url, supabase_key)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 class SupabaseDatabase(DatabaseBackend):
     def add_subscription(self, subscription):
