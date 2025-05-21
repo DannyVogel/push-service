@@ -7,12 +7,10 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.routers import subscriptions, notifications
 from app.exceptions import http_exception_handler, validation_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
-from app.middleware import OriginRestrictionMiddleware
 from app.config import ALLOWED_ORIGINS
 
 app = FastAPI()
 
-app.add_middleware(OriginRestrictionMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=list(ALLOWED_ORIGINS),
@@ -30,5 +28,3 @@ app.include_router(notifications.router)
 @app.get("/")
 def read_root():
     return "Welcome to the Notification Service"
-
-
