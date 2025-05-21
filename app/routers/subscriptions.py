@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.db.methods import add_subscription, remove_subscription
 from app.models.subscription import Subscription, UnsubscribeRequest
-from app.utils import success_response
+from app.utils.response import success_response
 import logging
 
 router = APIRouter()
