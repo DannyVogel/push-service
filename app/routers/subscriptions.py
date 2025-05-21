@@ -1,12 +1,13 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import HTTPException
 from app.db.methods import add_subscription, remove_subscription
 from app.models.subscription import Subscription, UnsubscribeRequest
 from app.utils.response import success_response
+from app.utils.router import create_protected_router
 import logging
 
-router = APIRouter()
+router = create_protected_router()
 
-@router.post("/subscribe")
+@router.post("/subscribe") 
 def subscribe(subscription: Subscription):
     try:
         result = add_subscription(subscription.model_dump())
