@@ -15,7 +15,10 @@ class SupabaseDatabase(DatabaseBackend):
             "expiration_time": subscription.get("expiration_time"),
             "metadata": subscription.get("metadata"),
         }
-        result = supabase.table("subscriptions").insert(data).execute()
+        result = supabase.table("subscriptions").upsert(
+            data,
+            on_conflict="endpoint"
+        ).execute()
         return result.data
 
     def remove_subscription(self, endpoint):
