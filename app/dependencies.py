@@ -1,7 +1,8 @@
-from fastapi import Header, HTTPException
+from fastapi import Header, HTTPException, Depends
+import os
 
-def verify_api_key(x_api_key: str = Header(...)):
-    # TODO: Replace with real API key check
-    if x_api_key != "your_api_key_here":
-        raise HTTPException(status_code=403, detail="Invalid API Key")
-    return x_api_key 
+API_KEY = os.getenv("API_KEY")
+
+def verify_api_key(x_api_key: str = Header(None)):
+    if not x_api_key or x_api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid or missing API key")
