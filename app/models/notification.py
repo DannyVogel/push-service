@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Dict, Optional, Any
+from typing import Optional
 from app.models.subscription import Subscription
 
 class NotificationData(BaseModel):
