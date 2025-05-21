@@ -19,6 +19,14 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={
             "status_code": 400,
             "message": "Validation error",
-            "error": exc.errors(),
+            "error": [
+                {
+                    "loc": err["loc"],
+                    "msg": err["msg"],
+                    "type": err["type"],
+                    "input": str(err.get("input")) if "input" in err else None,
+                }
+                for err in exc.errors()
+            ],
         },
-    ) 
+    )
