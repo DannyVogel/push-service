@@ -6,9 +6,9 @@ async def verify_api_key(request: Request, x_api_key: str = Header(default=None)
     if x_api_key and x_api_key == expected_key:
         return
 
-    origin = request.headers.get("origin")
-    if origin and origin in ALLOWED_ORIGINS:
-        return
+    # origin = request.headers.get("origin")
+    # if origin and origin in ALLOWED_ORIGINS:
+    #     return
 
     raise HTTPException(
         status_code=403,
