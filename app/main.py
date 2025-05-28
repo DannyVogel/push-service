@@ -11,7 +11,6 @@ from app.config import ALLOWED_ORIGINS
 
 app = FastAPI()
 
-print("ALLOWED_ORIGINS", ALLOWED_ORIGINS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
