@@ -7,13 +7,11 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.routers import subscriptions, notifications
 from app.exceptions import http_exception_handler, validation_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
-from app.config import ALLOWED_ORIGINS
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
