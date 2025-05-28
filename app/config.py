@@ -12,4 +12,4 @@ VAPID_EMAIL = os.getenv("VAPID_EMAIL")
 
 API_KEY = os.getenv("API_KEY")
 
-ALLOWED_ORIGINS = set(os.getenv("ALLOWED_ORIGINS", "").split(","))
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
