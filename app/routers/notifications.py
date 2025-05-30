@@ -39,7 +39,7 @@ async def notify(
         await logger.info(
             "Push notification sent successfully",
             source=LogSource.SERVICE,
-            metadata={"subscription_endpoint": request.subscription.endpoint, "subscription": request.subscription.keys, "result": result}
+            metadata={"subscription_endpoint": request.subscription.endpoint, "subscription": request.subscription.keys.model_dump_json(), "result": result.json()}
         )
         
         return success_response(
