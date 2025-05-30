@@ -6,3 +6,9 @@ def create_protected_router():
         prefix="/api",
         dependencies=[Depends(verify_api_key)]
     )
+
+def create_logger_router():
+    return APIRouter(
+        prefix="/logs",
+        dependencies=[Depends(verify_api_key)]
+    )

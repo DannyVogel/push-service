@@ -4,7 +4,7 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from app.routers import subscriptions, notifications
+from app.routers import subscriptions, notifications, logs
 from app.exceptions import http_exception_handler, validation_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -22,7 +22,8 @@ app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 app.include_router(subscriptions.router)
-app.include_router(notifications.router) 
+app.include_router(notifications.router)
+app.include_router(logs.router)
 
 @app.get("/")
 def read_root():
