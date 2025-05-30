@@ -28,7 +28,7 @@ async def notify(
             }
         )
 
-        webpush(
+        result = webpush(
             subscription_info=request.subscription.model_dump(),
             data=json.dumps(request.payload.model_dump()),
             vapid_private_key=vapid_private_key,
@@ -39,7 +39,7 @@ async def notify(
         await logger.info(
             "Push notification sent successfully",
             source=LogSource.SERVICE,
-            metadata={"subscription_endpoint": request.subscription.endpoint}
+            metadata={"subscription_endpoint": request.subscription.endpoint, "subscription": request.subscription.keys, "result": result}
         )
         
         return success_response(
