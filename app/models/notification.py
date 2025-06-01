@@ -36,5 +36,4 @@ class NotificationPayload(BaseModel):
 
 class NotificationRequest(BaseModel):
     payload: NotificationPayload
-    device_id: str
-    user_id: Optional[str] = None
+    device_ids: List[str]  
