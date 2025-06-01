@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
 
 class Keys(BaseModel):
@@ -14,9 +14,7 @@ class Subscription(BaseModel):
 class SubscriptionRequest(BaseModel):
     subscription: Subscription
     device_id: str
-    user_id: Optional[str] = None
 
 class UnsubscribeRequest(BaseModel):
-    device_id: str
-    user_id: Optional[str] = None
+    device_ids: List[str]  
 

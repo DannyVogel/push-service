@@ -1,5 +1,5 @@
 from fastapi import HTTPException, Request
-from app.db.methods import add_subscription, remove_subscription
+from app.db.methods import add_subscription, remove_subscriptions
 from app.models.subscription import SubscriptionRequest, UnsubscribeRequest
 from app.utils.response import success_response
 from app.utils.router import create_protected_router
@@ -15,7 +15,8 @@ async def subscribe(subscription_request: SubscriptionRequest, request: Request)
             "Processing subscription request",
             source=LogSource.SERVICE,
             metadata={
-                "endpoint": subscription_request.subscription.endpoint if subscription_request and hasattr(subscription_request, 'subscription') else None,
+                "endpoint": subscription_request.subscription.endpoint,
+                "device_id": subscription_request.device_id,
                 "client_ip": request.client.host if request.client else None
             }
         )
@@ -27,12 +28,13 @@ async def subscribe(subscription_request: SubscriptionRequest, request: Request)
             source=LogSource.SERVICE,
             metadata={
                 "endpoint": result[0]["endpoint"],
+                "device_id": subscription_request.device_id,
                 "result_count": len(result)
             }
         )
         
         return success_response(
-            data={"endpoint": result[0]["endpoint"]},
+            data={"endpoint": result[0]["endpoint"], "device_id": subscription_request.device_id},
             message="Subscribed successfully",
             status_code=201
         )
@@ -42,7 +44,8 @@ async def subscribe(subscription_request: SubscriptionRequest, request: Request)
             source=LogSource.SERVICE,
             metadata={
                 "error_type": type(e).__name__,
-                "endpoint": subscription_request.subscription.endpoint if subscription_request and hasattr(subscription_request, 'subscription') else None,
+                "endpoint": subscription_request.subscription.endpoint,
+                "device_id": subscription_request.device_id,
                 "error_details": str(e)
             }
         )
@@ -52,33 +55,40 @@ async def subscribe(subscription_request: SubscriptionRequest, request: Request)
 async def unsubscribe(unsubscribe_request: UnsubscribeRequest, request: Request):
     try:
         await logger.info(
-            "Processing unsubscribe request",
+            f"Processing batch unsubscribe request for {len(unsubscribe_request.device_ids)} devices",
             source=LogSource.SERVICE,
             metadata={
-                "device_id": unsubscribe_request.device_id,
-                "user_id": unsubscribe_request.user_id,
+                "device_ids": unsubscribe_request.device_ids,
+                "device_count": len(unsubscribe_request.device_ids),
                 "client_ip": request.client.host if request.client else None
             }
         )
         
-        result = remove_subscription(unsubscribe_request.device_id, unsubscribe_request.user_id)
+        result = remove_subscriptions(unsubscribe_request.device_ids)
         if not result:
             await logger.warn(
-                "Unsubscribe failed: subscription not found",
+                "Unsubscribe failed: no subscriptions found for provided device IDs",
                 source=LogSource.SERVICE,
-                metadata={"device_id": unsubscribe_request.device_id, "user_id": unsubscribe_request.user_id}
+                metadata={"device_ids": unsubscribe_request.device_ids}
             )
-            raise HTTPException(status_code=404, detail="Subscription not found")
+            raise HTTPException(status_code=404, detail="No subscriptions found for provided device IDs")
         
         await logger.info(
-            "Unsubscribe successful",
+            f"Batch unsubscribe successful: removed {len(result)} subscriptions",
             source=LogSource.SERVICE,
-            metadata={"device_id": unsubscribe_request.device_id, "user_id": unsubscribe_request.user_id}
+            metadata={
+                "device_ids": unsubscribe_request.device_ids,
+                "removed_count": len(result)
+            }
         )
         
         return success_response(
-            data={"device_id": unsubscribe_request.device_id, "user_id": unsubscribe_request.user_id},
-            message="Unsubscribed successfully",
+            data={
+                "device_ids": unsubscribe_request.device_ids,
+                "removed_count": len(result),
+                "removed_subscriptions": result
+            },
+            message=f"Successfully unsubscribed {len(result)} devices",
             status_code=200
         )
     except HTTPException:
@@ -86,16 +96,12 @@ async def unsubscribe(unsubscribe_request: UnsubscribeRequest, request: Request)
         raise
     except Exception as e:
         await logger.error(
-            f"Unsubscribe failed: {str(e)}",
+            f"Batch unsubscribe failed: {str(e)}",
             source=LogSource.SERVICE,
             metadata={
                 "error_type": type(e).__name__,
-                "device_id": unsubscribe_request.device_id,
-                "user_id": unsubscribe_request.user_id,
+                "device_ids": unsubscribe_request.device_ids,
                 "error_details": str(e)
             }
         )
-        raise HTTPException(status_code=500, detail=f"Unsubscribe failed: {str(e)}") 
-    
-# @router.post("/unsubscribe_user")
-# TODO: Implement this
+        raise HTTPException(status_code=500, detail=f"Batch unsubscribe failed: {str(e)}")

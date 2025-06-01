@@ -15,7 +15,6 @@ class SupabaseDatabase(DatabaseBackend):
             "expiration_time": subscription.expiration_time,
             "metadata": subscription.metadata,
             "device_id": subscription_request.device_id,
-            "user_id": subscription_request.user_id,
         }
         result = self.supabase.table("subscriptions").upsert(
             data,
@@ -23,17 +22,9 @@ class SupabaseDatabase(DatabaseBackend):
         ).execute()
         return result.data
 
-    def remove_subscription(self, device_id: str, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
-        query = self.supabase.table("subscriptions").delete().eq("device_id", device_id)
-        
-        if user_id is not None:
-            query = query.eq("user_id", user_id)
-            
-        result = query.execute()
-        return result.data
-
-    def remove_user_subscriptions(self, user_id: str) -> List[Dict[str, Any]]:
-        result = self.supabase.table("subscriptions").delete().eq("user_id", user_id).execute()
+    def remove_subscriptions(self, device_ids: List[str]) -> List[Dict[str, Any]]:
+        """Remove subscriptions for multiple device IDs"""
+        result = self.supabase.table("subscriptions").delete().in_("device_id", device_ids).execute()
         return result.data
 
     def get_subscriptions(self, metadata_filter: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
