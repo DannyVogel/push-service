@@ -11,5 +11,12 @@ class Subscription(BaseModel):
     expiration_time: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
 
+class SubscriptionRequest(BaseModel):
+    subscription: Subscription
+    device_id: str
+    user_id: Optional[str] = None
+
 class UnsubscribeRequest(BaseModel):
-    endpoint: str
+    device_id: str
+    user_id: Optional[str] = None
+
