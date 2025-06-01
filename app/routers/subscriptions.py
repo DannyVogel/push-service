@@ -1,6 +1,6 @@
 from fastapi import HTTPException, Request
 from app.db.methods import add_subscription, remove_subscription
-from app.models.subscription import Subscription, UnsubscribeRequest
+from app.models.subscription import SubscriptionRequest, UnsubscribeRequest
 from app.utils.response import success_response
 from app.utils.router import create_protected_router
 from app.utils.logger import logger
@@ -9,18 +9,18 @@ from app.models.log import LogSource
 router = create_protected_router()
 
 @router.post("/subscribe") 
-async def subscribe(subscription: Subscription, request: Request):
+async def subscribe(subscription_request: SubscriptionRequest, request: Request):
     try:
         await logger.info(
             "Processing subscription request",
             source=LogSource.SERVICE,
             metadata={
-                "endpoint": subscription.endpoint,
+                "endpoint": subscription_request.subscription.endpoint if subscription_request and hasattr(subscription_request, 'subscription') else None,
                 "client_ip": request.client.host if request.client else None
             }
         )
         
-        result = add_subscription(subscription.model_dump())
+        result = add_subscription(subscription_request)
         
         await logger.info(
             "Subscription successful",
@@ -42,7 +42,7 @@ async def subscribe(subscription: Subscription, request: Request):
             source=LogSource.SERVICE,
             metadata={
                 "error_type": type(e).__name__,
-                "endpoint": subscription.endpoint if subscription else None,
+                "endpoint": subscription_request.subscription.endpoint if subscription_request and hasattr(subscription_request, 'subscription') else None,
                 "error_details": str(e)
             }
         )
@@ -55,28 +55,29 @@ async def unsubscribe(unsubscribe_request: UnsubscribeRequest, request: Request)
             "Processing unsubscribe request",
             source=LogSource.SERVICE,
             metadata={
-                "endpoint": unsubscribe_request.endpoint,
+                "device_id": unsubscribe_request.device_id,
+                "user_id": unsubscribe_request.user_id,
                 "client_ip": request.client.host if request.client else None
             }
         )
         
-        result = remove_subscription(unsubscribe_request.endpoint)
+        result = remove_subscription(unsubscribe_request.device_id, unsubscribe_request.user_id)
         if not result:
             await logger.warn(
                 "Unsubscribe failed: subscription not found",
                 source=LogSource.SERVICE,
-                metadata={"endpoint": unsubscribe_request.endpoint}
+                metadata={"device_id": unsubscribe_request.device_id, "user_id": unsubscribe_request.user_id}
             )
             raise HTTPException(status_code=404, detail="Subscription not found")
         
         await logger.info(
             "Unsubscribe successful",
             source=LogSource.SERVICE,
-            metadata={"endpoint": result["endpoint"]}
+            metadata={"device_id": unsubscribe_request.device_id, "user_id": unsubscribe_request.user_id}
         )
         
         return success_response(
-            data={"endpoint": result["endpoint"]},
+            data={"device_id": unsubscribe_request.device_id, "user_id": unsubscribe_request.user_id},
             message="Unsubscribed successfully",
             status_code=200
         )
@@ -89,8 +90,12 @@ async def unsubscribe(unsubscribe_request: UnsubscribeRequest, request: Request)
             source=LogSource.SERVICE,
             metadata={
                 "error_type": type(e).__name__,
-                "endpoint": unsubscribe_request.endpoint if unsubscribe_request else None,
+                "device_id": unsubscribe_request.device_id,
+                "user_id": unsubscribe_request.user_id,
                 "error_details": str(e)
             }
         )
         raise HTTPException(status_code=500, detail=f"Unsubscribe failed: {str(e)}") 
+    
+# @router.post("/unsubscribe_user")
+# TODO: Implement this
